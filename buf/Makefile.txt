@@ -1,0 +1,26 @@
+CC=g++ # 컴파일러 지정
+LIBNAME=libmybuf # 라이브러리 이름 지정
+LIB=$(LIBNAME).so.1.0 # 라이브러리 파일 이름 지정
+CFLAGS= -Wall # 컴파일 옵션 : 모든 경고 표시
+OBJS = buffile.o iobuffer.o # 컴파일할 소스 파일 명시
+
+INCDIR=../include # 헤더 파일 위치 지정
+LIBDIR=../lib # 라이브러리 저장 위치 지정
+# 나중에 추가적으로 export LD_LIBRARY_PATH=/mnt/d/github/fs2024-code01-sinsehwan/ch05/ch5.3_RecordFile/lib:$LD_LIBRARY_PATH
+# 이런식으로 환경변수값 변경해줘야 함
+$(LIB): $(OBJS) # OBJS를 통해 라이브러리 구성
+	$(CC) -fPIC -shared -Wl,-soname=$(LIBNAME).so.1 $(OBJS) -o $@ -lc
+	cp $(LIB) $(LIBDIR)
+	ln -s $(LIBDIR)/$(LIBNAME).so.1.0 $(LIBDIR)/$(LIBNAME).so
+	ln -s $(LIBDIR)/$(LIBNAME).so.1.0 $(LIBDIR)/$(LIBNAME).so.1		
+
+# OBJS를 활용해서 공유 라이브러리를 위치 독립적으로 만든다. 이때 링커에게 추가 정보를 제공한다.
+# 생성된 공유 라이브러리를 $(LIBDIR)로 복사한다.
+# .so.1.0을 가리키는 .so 심볼릭 링크를 만든다.
+# .so.1.0을 가리키는 .so.1 심볼릭 링크를 만든다.
+
+%.o: %.cpp # cpp파일을 object파일로 컴파일
+	$(CC) -fPIC -c $(CFLAGS) -I$(INCDIR) -o $@ $<
+
+clean: # obect파일과 라이브러리 파일 삭제
+	-rm -rf $(OBJS) $(LIB) $(LIBDIR)/$(LIBNAME).so*
